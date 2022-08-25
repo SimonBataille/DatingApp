@@ -54,6 +54,7 @@ ServiceToken:
 
 ### client (Angular)
 
+section 5 
 src/app: 
     - app-component.html : source app-component.ts (title, users) pour affichage
     - app-component.ts : route, init, stoque les datas reçues
@@ -92,7 +93,7 @@ Observable ???
 dans account.service.ts on crée l'observable sur le user reçu dans la méthode login 
 private currentUserSource = new ReplaySubject<User>(1);
 currentUser$ = this.currentUserSource.asObservable();
-this.currentUserSource.next(user);
+this.currentUserSource.next(user); : mis à jour de l'observable dans la req login
 
 on s'abonne a currentUser$ dans navComponent.ts pour savoir si le user est dans le local storage
 on rend public le account service dans navComponent.ts pour l'appeler dans navComponent.html
@@ -128,3 +129,46 @@ pass data from child to  parent
     - <app-register [usersFromHomeComponent] = "users" (cancelRegister)="cancelRegisterMode($event)"></app-register>
 
   constructor(private accountService: AccountService) { } : injecte accountService inside the component
+
+6 angular routing:
+- route components not pages like in trad html
+- ng g c member-list --skip-tests, ng g c messages --skip-tests, ng g c lists --skip-tests
+- app-routing.modules.ts => impoit in app.modules.ts, array of routes
+- router-oulet in app-component
+- routre-link in nav.component
+
+- constructor(public accountService: AccountService, private router: Router) {} : import le service router dans un component
+
+- notify the user
+    - cd client
+    - npm install ngx-toastr@13.0.0 : install le package toastr for angular dans client
+    - style for toast in angular.json
+    - dans app.module : import { ToastrModule } from 'ngx-toastr';
+            ToastrModule.forRoot({
+                positionClass: 'toast-bottom-right'
+            }),
+    - now we have a toastr service inside app/navComponent: import { ToastrService } from 'ngx-toastr';  constructor(public accountService: AccountService, private router: Router, private toastr: ToastrService) {}
+    -toastr launch pop-up when error !!
+
+-  *ngIf="accountService.currentUser$ | async" : check if i am authenticated
+
+- route gard : cd _gards, ng g guard auth --skip-tests, interface canActivate, CREATE src/app/_gards/auth.guard.ts (457 bytes)
+    - a class can activate the interface guard
+    - account.service: currentUserSource observable by any class or service = the guards can subscribe to observable Automatically !!!
+    - pipe because we don't need to subscribe
+    - app.routing:  {path: 'members', component: MemberListComponent, canActivate: [AuthGuard]}, = guard sur la route members si pasconnecter
+    - auth.guard: canActivate ()this.toastr.error('You shall not pass!')
+
+    - children cover covered by authguard
+    - ng-container to apply *ngIf="accountService.currentUser$ | async" => don't produce html
+
+- a boostrap theme
+    - cd client
+    - npm install bootswatch@4.5.2: available in our app
+    - angular.json
+
+- keep app.module tidy (we are going to use more and more bootstrap components)
+     - cd src/app/_modules
+     - ng g m shared --flat: CREATE src/app/_models/shared.module.ts (192 bytes)
+     - shared.module : toast, bsdropdown, export: []
+     - app.module : import SharedModule
