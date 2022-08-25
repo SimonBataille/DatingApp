@@ -1,3 +1,5 @@
+WiFi4IDT2020
+
 ### API
 Quand AddDbContext<DataContext> est appelé, le runtime lui passe un DbContextOptionsBuilder en paramètre
 On récupère ce DbContextOptionsBuilder et on utilise sa méthode UseSqlite pour créer les DbContextOptions avec un fonction lambda
@@ -106,4 +108,23 @@ UPDATE src/app/app.module.ts (873 bytes)
     => structure for home component
 
 
-home component is a child of app.component : pass data from parent to child
+home component is a child of app.component : pass data from parent to child :
+    - parent = home.component.ts : this.http.get('https://localhost:5001/api/users').subscribe(users => this.users = users);
+        - shorthand: users in the response body from API
+        - assign this.users to users from users inside API response
+        - pour users = List<AppUser>
+    - child = register.component.ts : @Input() usersFromHomeComponent: any;
+        - register.component.html : <option *ngFor="let user of usersFromHomeComponent" [value]="user.userName">
+
+pass data from child to  parent
+- registercomponent
+    - <button class="btn btn-default mr-2" (click)="cancel()" type="button">Cancel</button>
+    - @Output() cancelRegister = new EventEmitter();
+    - cancel() { this.cancelRegister.emit(false); }
+- home comonent.ts
+    - cancelRegisterMode(event: boolean) {
+        this.registerMode = event;
+    }
+    - <app-register [usersFromHomeComponent] = "users" (cancelRegister)="cancelRegisterMode($event)"></app-register>
+
+  constructor(private accountService: AccountService) { } : injecte accountService inside the component
