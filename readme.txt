@@ -172,3 +172,78 @@ pass data from child to  parent
      - ng g m shared --flat: CREATE src/app/_models/shared.module.ts (192 bytes)
      - shared.module : toast, bsdropdown, export: []
      - app.module : import SharedModule
+
+
+### Section 7 : error handling 
+- api middleware
+- angular interceptor: req going out and resp coming back
+- exceptions
+
+API
+    - specific controller in API: buggy to provoke errors
+        - ActionResult<string> : core.mvc
+            - routes: auth, not-found, server-error, bad-request
+        - register.dto : [StringLength(8, MinimumLength = 4)] password lenght error route account/rgister
+
+    - startup : app.UseDeveloperExceptionPage(); dans le middleware container
+
+    - Error folder:
+            - ApiException : for every error in our API
+
+    - middleware folder : 
+        - middleware to handle exception, reqDelegate, HttpContext = error happen in http context req
+        - exception are generated from controller with function from Microsoft.AspNetCore.Mvc (http) and remonte up back to the middleware wich use function from Microsoft.AspNetCore.Mvc (http)
+        - startup : utilise notre middleware pour traiter les exceptions
+                // if (env.IsDevelopment())
+                // {
+                //     app.UseDeveloperExceptionPage();
+                //     app.UseSwagger();
+                //     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPIv5 v1"));
+                // }
+
+                app.UseMiddleware<ExceptionMiddleware>(); => top of the middleware
+                - passe la req endessous de lui, si une exception est déclenchée, elle remonte puis elle prise en charge par ExceptonMiddleware
+
+                les middleware sont liés les uns aux autres dans startup
+
+CLIENT
+    - mkdir src/app/errors
+    - ng g c test-errors --skip-tests (g c : generate component)
+        CREATE src/app/errors/test-errors/test-errors.component.html (26 bytes)
+        CREATE src/app/errors/test-errors/test-errors.component.ts (294 bytes)
+        CREATE src/app/errors/test-errors/test-errors.component.css (0 bytes) 
+        UPDATE src/app/app.module.ts (1548 bytes)
+    - test errors response from api in test-errors.component.ts : route to send bad req to buggy api
+    - boutton pour envoyer les req dans test-errors.component.html
+    - ajoute les routes dans app-routing.modules.ts 
+
+    - http interceptor : intercept globally exception in angular from API
+        - mkdir src/app/_interceptors
+        - ng g interceptor --skip_tests
+            CREATE src/app/_interceptors/error.interceptor.ts (410 bytes)
+        - intercept req out or resp back
+        - constructor(private router: Router, private toastr: ToastrService) {}, router to redirect, toast to notify
+        - intercept ret observable ==> use pipe !! 
+        - provide interceptor dans les modules dans app.modules.ts, on ajoute l'interceptor à celui déjà présent dans angular
+        - flat() method, tsconfig.ts, "es2019",
+
+    - 404 handler : cd app/errors, ng g c not-found --skip-tests
+
+    - 500 server error: cd app/errors, ng g c server-error --skip-tests
+            CREATE src/app/errors/server-error/server-error.component.html (27 bytes)
+            CREATE src/app/errors/server-error/server-error.component.ts (298 bytes)
+            CREATE src/app/errors/server-error/server-error.component.css (0 bytes)
+            UPDATE src/app/app.module.ts (1924 bytes)
+
+        - case 500 dans error.interceptor.ts, component interceptor is load when error from API
+            - dans server-error.component.ts
+                constructor(private router: Router) {
+                    const navigation = this.router.getCurrentNavigation();
+                    this.error = navigation?extras?.state?.error;
+                }
+                constructor only called one time !!! disapear after refresh
+            - 1. error is intercepted by interceptor
+            - 2. interceptor route the error to /server-error
+            - 3. la route /server-error is redirect to server-error.component by app-routing.modules
+            - 4. le server-error.component recupere l'error dans son constructeur
+            - 5. on affiche le html du server-error.component
