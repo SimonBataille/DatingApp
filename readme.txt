@@ -130,7 +130,8 @@ pass data from child to  parent
 
   constructor(private accountService: AccountService) { } : injecte accountService inside the component
 
-6 angular routing:
+
+SECTION 6 angular routing:
 - route components not pages like in trad html
 - ng g c member-list --skip-tests, ng g c messages --skip-tests, ng g c lists --skip-tests
 - app-routing.modules.ts => impoit in app.modules.ts, array of routes
@@ -247,3 +248,63 @@ CLIENT
             - 3. la route /server-error is redirect to server-error.component by app-routing.modules
             - 4. le server-error.component recupere l'error dans son constructeur
             - 5. on affiche le html du server-error.component
+
+summary : 
+    - API : create own exception class, exception handling middleware => return our own exceptions to the client rather than utilisize the exception middleware provided by .NET cover
+        - middleware for dev and prod
+    - Angular : interceptor => check any errors from API response
+
+SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF Conventions, seed databases, repository pattern, automapper
+
+- extend entities: photo.cs
+- datetime Extensions
+- [Table("Photos")], using System.ComponentModel.DataAnnotations.Schema; in Entities/photo.cs => create the table photos
+    - cd API
+    - dotnet ef migrations add ExtendedUserEntity
+        - new migrations with photos and foreign key !!!
+        - attention nullable id user, on delete behaviour => should delete the photos
+        - we have to use entity framework convention : dotnet ef migrations remove
+    - fully define relatonship: AppUser, AppUserId in photo => dotnet ef migrations add ExtendedUserEntity => dotnet ef database update
+- seed data: lazy efficient way : JSON data, json generator => UserSeedData.json
+-seed.cs class : tracking (context.Users.Add(user)), sync with database: (await context.SaveChangesAsync())
+    - call Program.cs => before application starts
+        - try/catch: we are outside our middleware !!
+        - await context.Database.MigrateAsync(); : restart app to apply migrtions
+        - remove Run() => call it after !!!
+- sending data :
+    - dotnet ef database drop
+    - dotnet wtch run => all data populated
+- [Authorize] pour toute la classe UserController
+
+- repository pattern : redesign architecture pattern app
+    - repository between the domain and data mapping layers acting like an in-memry domain object collection
+    - web server (kestrel server) in API, req comes into controller endpoint, we are injecting dbContxt in our controller,
+      dbContext represents a session with our database, dbcontext is translating the logic, the queries that we are writing in controller
+      and fishing the data from db and return it to the controller which return to the CLIENT
+    - repository pattern : a layer of abstarction, controller uses repo and executes methods inside there
+                         repository uses the dbcontext to go and executes the logic
+    - why :
+        - encapsulate the logic : lots of methods inside DbContext<DbSet>, few in repository, only a few method for the controller
+        - reduce duplicate query logic in controller : create logic in controller, and execute in repository
+        - promote testability
+        - repository have interfaces and implementation class for repository => repo iface in controller, and implementation class
+        - repo pattern decentralize our query
+        - ~ entityframework abstarction of database, repo is abstarction of entityframework
+
+- iface and implementation for user: Interfaces/IUserRepository, only provide method for entity
+    - Data/UserRepository for implementing
+    - ApplicationServiceExtensions : add service for the repository
+
+- what to update in controller to use repo
+    - UsersController.cs : IUserRepository in spite of DatatContext
+
+- MemberDto : circular
+
+- automapper: nugget = automapper
+    - helpers class
+    - map one object to another
+    - services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+
+- use of automapper :
+
+
