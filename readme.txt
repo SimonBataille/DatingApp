@@ -298,13 +298,78 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
 - what to update in controller to use repo
     - UsersController.cs : IUserRepository in spite of DatatContext
 
-- MemberDto : circular
+- MemberDto : avoid circular object reference => transfer photo_dto and members_dto
 
 - automapper: nugget = automapper
     - helpers class
     - map one object to another
     - services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
+- create of automapper :
+    - map from app_user entity to member_dto
+    - map from photo entity to photo_dto
+    - add auto_mapper to application_service_extension : services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+
 - use of automapper :
+    - change appuser to memberdto in usercontroller
+    - inject Imapper iface in usercontroller
+    - map appuser to memberdto : return usertoreturn = _mapper.Map<MemberDto>(user);
+
+- configure automapper : photourl
+    - automapperprofile : .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src =>
+                    src.Photos.FirstOrDefault(x => x.IsMain).Url))
+    - linq expression !!!
+    - is it optimal ?
+
+- automapper queryable extension : premature optimization is the root of all evil
+    - what we are doing in user_repository: get_user_by_username
+        - get user from db
+        - include photo collection
+        - pass to the controller
+    - inside controller
+        - we have got entity in memory : getuserbyusernameasync
+        - go in memory and map from one object to another
+    - better to go and get thez properties we need from db and passes back a dto from database level
+    - rather then get an entity and then converting into dto
+    - create new method inside IUserRepository
+        - Task<IEnumerable<MemberDto>> GetMembersAsync();
+        - Task<MemberDto> GetMemberAsync(string username);
+        - we are returning MemberDto in spite of AppUser
+    - implement method inside UserRepository
+        - if we didn't use automapper :
+            - return await _context.Users
+                .Where(x => x.UserName = username)
+                .Select(user => new MemberDto{
+                    Id = user.Id;
+                    Username = user.UserName
+                }).SingleOrDefaultAsync() = execute query to db
+            - we select all the property !! need to use ProjectTo<MemberDto>
+        - with automapper :
+            - inject IMapper in UserRepository
+            - public async Task<IEnumerable<MemberDto>> GetMembersAsync()
+            {
+                return await _context.Users
+                    .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+            }
+            - in usercontroller 
+            [HttpGet("{username}")]
+            public async Task<ActionResult<MemberDto>> GetUser(string username)
+            {
+                var user = await _userRepository.GetMemberAsync(username);
+
+                return await _userRepository.GetMemberAsync(username);
+            }
+            - but GetAge method : mapper had to get all user 
+            - in AutoMapperProfiles
+             .ForMember(dest => dest.Age, opt => opt.MapFrom(src => 
+             src.DateOfBirth.CalculateAge()));
+            - we optimize our request !!!
+
+    Le usercontroler call getmemberAsync in spite of getUserAsync 
+
+
+
+
 
 
