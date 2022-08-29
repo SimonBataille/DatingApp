@@ -52,9 +52,9 @@ ServiceToken:
 
 
 
-### client (Angular)
+### section 5 
 
-section 5 
+client (Angular)
 src/app: 
     - app-component.html : source app-component.ts (title, users) pour affichage
     - app-component.ts : route, init, stoque les datas reçues
@@ -77,11 +77,11 @@ UPDATE src/app/app.module.ts (648 bytes) : update app-module "import { NavCompon
 integrer un component dans un autre component: component selector app-nav => <app-nav></app-nav>, app-root => <app-root></app-root>
 
 2 ways binding data :
-    - data or propertie sin comonent => on les display dans les templates html
-    - data from forms in html => recupere dans les componets
+    - data or properties in component => on les display dans les templates html
+- data from forms in html => recupere dans les components
     - [] receive from component, () send to component from html, [()] 2_way binding
 
-services shared among all comonents, grouped in _services:
+services shared among all components, grouped in _services:
     - ng g s account --skip-tests : CREATE src/app/_services/account.service.ts (136 bytes)
     - Injectable : service can be injected into service or component in the application
     - singleton
