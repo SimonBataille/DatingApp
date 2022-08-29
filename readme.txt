@@ -379,8 +379,42 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
 
     Le usercontroler call getmemberAsync in spite of getUserAsync 
 
+### SECTION 9 : building the usr interface
 
+- typescript : interface, ? = optional, 
+- create user and photo type in angular app to receive data from API, copy postman response in clipboard !!! json to ts
+- create _models/member.ts, move photo to a new file, type safety
 
+- hard coding NO => use environment file (apiUrl: 'https://localhost:5001/api/') and baseUrl = environment.apiUrl; in account servie
+- create service for members
+    - cd _services, ng g s members --skip-tests
+    - create members.services.ts
+    - httpoption : bearer for Authorize
+        getMembers() {
+            return this.http.get<Member[]>(this.baseUrl + 'users', httpOptions);
+        }
 
+- retreiving list of member in our member-list.component.ts: subscribe à l'observable
+    loadMembers() {
+        this.memberService.getMembers().subscribe(members => {
+        this.members = members;
+        })
+    }
 
+- component member card in members
+    - ng g c member-card --skip-tests
+    - @Input() member: Member; inside member-card.component
+    - css in member-card.component.css
 
+- interceptor to send token (instead of const httpOptions in members.services)
+    - cd ..\_interceptors\
+    - ng g interceptor jwt --skip-tests => CREATE src/app/_interceptors/jwt.interceptor.ts (408 bytes)
+    - {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true}: app.module
+    -   this.accountService.currentUser$.pipe(take(1)).subscribe(user => currentUser = user);
+        if (currentUser) {
+        request = request.clone({
+            setHeaders: {
+            Authorization: `Bearer ${currentUser.token}`
+            }
+        })
+        }
