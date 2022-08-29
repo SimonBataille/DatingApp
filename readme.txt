@@ -79,13 +79,19 @@ integrer un component dans un autre component: component selector app-nav => <ap
 2 ways binding data :
     - data or properties in component => on les display dans les templates html
 - data from forms in html => recupere dans les components
-    - [] receive from component, () send to component from html, [()] 2_way binding
+    - [] receiving from component, () send to component from html, [()] 2_way binding
 
 services shared among all components, grouped in _services:
     - ng g s account --skip-tests : CREATE src/app/_services/account.service.ts (136 bytes)
-    - Injectable : service can be injected into service or component in the application
-    - singleton
+    - @Injectable : service can be injected into service or component in the application
+    - providedIn: 'root' (app.component) => singleton
     - envoie les données du formulaire au serveur API
+        - dans nav.component.html : [(ngModel)]="model.username" => property called model in nav.component.ts = 2 ways binding
+            - set model.username=input(usernam)
+        - receive data from our form !!
+
+- inject service in nav.component.ts : constructor(private accountService: AccountService) {}
+
 
 
 
@@ -94,6 +100,11 @@ dans account.service.ts on crée l'observable sur le user reçu dans la méthode
 private currentUserSource = new ReplaySubject<User>(1);
 currentUser$ = this.currentUserSource.asObservable();
 this.currentUserSource.next(user); : mis à jour de l'observable dans la req login
+la méthode login du navComponent appelle la methode login de AccountService et subscribe à la réponse
+    - pipe : modify data
+    - subscribe : get the finale modified data
+
+*ngIf="(accountService.currentUser$ | async) as user" => automatically subscribe/unsubscribe to observables 
 
 on s'abonne a currentUser$ dans navComponent.ts pour savoir si le user est dans le local storage
 on rend public le account service dans navComponent.ts pour l'appeler dans navComponent.html
@@ -134,7 +145,7 @@ pass data from child to  parent
 SECTION 6 angular routing:
 - route components not pages like in trad html
 - ng g c member-list --skip-tests, ng g c messages --skip-tests, ng g c lists --skip-tests
-- app-routing.modules.ts => impoit in app.modules.ts, array of routes
+- app-routing.modules.ts => import in app.modules.ts, array of routes
 - router-oulet in app-component
 - routre-link in nav.component
 
@@ -257,7 +268,7 @@ summary :
 SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF Conventions, seed databases, repository pattern, automapper
 
 - extend entities: photo.cs
-- datetime Extensions
+- datetime Extensions ==> can call DateOfBirth.CalculateAge()!!
 - [Table("Photos")], using System.ComponentModel.DataAnnotations.Schema; in Entities/photo.cs => create the table photos
     - cd API
     - dotnet ef migrations add ExtendedUserEntity
@@ -277,7 +288,7 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
 - [Authorize] pour toute la classe UserController
 
 - repository pattern : redesign architecture pattern app
-    - repository between the domain and data mapping layers acting like an in-memry domain object collection
+    - repository between the domain and data mapping layers acting like an in-memory domain object collection
     - web server (kestrel server) in API, req comes into controller endpoint, we are injecting dbContxt in our controller,
       dbContext represents a session with our database, dbcontext is translating the logic, the queries that we are writing in controller
       and fishing the data from db and return it to the controller which return to the CLIENT
