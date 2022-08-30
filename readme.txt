@@ -412,9 +412,44 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
     - {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true}: app.module
     -   this.accountService.currentUser$.pipe(take(1)).subscribe(user => currentUser = user);
         if (currentUser) {
-        request = request.clone({
-            setHeaders: {
-            Authorization: `Bearer ${currentUser.token}`
-            }
-        })
+            request = request.clone({
+                setHeaders: {
+                Authorization: `Bearer ${currentUser.token}`
+                }
+            })
         }
+    - jwt interceptor checks every http request and appen token to it !!!
+
+- member detail page
+    - private route: ActivatedRoute from angular router
+        loadMember() {
+            this.memberService.getMember(this.route.snapshot.paramMap.get('username')).subscribe(member => {
+                this.member = member;
+            })
+        }
+    - <h1 *ngIf="member">{{member.knownAs}}</h1>
+
+- member-details html:
+    - css/html
+    - import a new module : SharedModule.ts : import { TabsModule } from 'ngx-bootstrap/tabs'; , TabsModule.forRoot()
+    - tabset in member-details.component.html
+    - global css style sheet in angular src/styles.css from ressources
+
+- photos-gallery: kolkov-ngx/gallery
+    - cd client/
+    - npm install @kolkov/ngx-gallery@1.2.4
+    - import/export module in sharedmodule : NgxGalleryModule, import {NgxGalleryModule} from '@kolkov/ngx-gallery'
+    - inside member-details.components.ts : 
+        - galleryOptions: NgxGalleryOptions[];
+        - galleryImages: NgxGalleryImage[];
+        -   this.galleryOptions = [
+                {
+                    width: '500px',
+                    height: '500px',
+                    imagePercent: 100,
+                    thumbnailsColumns: 4,
+                    imageAnimation: NgxGalleryAnimation.Slide,
+                    preview: false
+                }
+            ]
+        
