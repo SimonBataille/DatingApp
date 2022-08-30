@@ -452,4 +452,34 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
                     preview: false
                 }
             ]
-        
+    
+### SECTIN 10 : updating ressources, profile
+
+- component to edit the profile
+    - cd src/app/members, ng g c member-edit --skip-test
+    - app-routing.modules : add route : { path: 'member/edit', component: MemberEditComponent },
+    - link in nav.component.html : <a routerLink='/member/edit' class="dropdown-item">Edit Profile</a>
+    - member_edit.component.ts :
+        constructor(private accountService: AccountService, private memberService: MembersService) { 
+            this.accountService.currentUser$.pipe(take(1)).subscribe(user => this.user);
+        }
+    - member_edit.component.html : <h1 *ngIf="member">{{member.username}}</h1>
+
+- creating edit-template form : member.edit.component.html
+
+- adding update functionality : 
+    - #editForm="ngForm" member.edit.component.html => <form #editForm="ngForm" id="editForm" (ngSubmit)="updateMember()">
+    - <div class="alert alert-info" *ngIf="editForm.dirty">
+    - method updateMember in member.edit.component.ts
+
+- CanActivate route guard:
+    - cd _guards, ng g guard prevent-unsave-changes --skip-tests, (*)CanDeactivate
+        - CREATE src/app/_gards/prevent-unsave-changes.guard.ts (563 bytes)
+        - export class PreventUnsaveChangesGuard implements CanDeactivate<unknown> {
+            canDeactivate(component: MemberEditComponent ): boolean {
+                if (component.editForm.dirty) {
+                return confirm('Are you sure you want to ontinue? Any unsaved changes will be lost');
+                }
+                return true;
+            }
+        - app-routing.modules :  { path: 'member/edit', component: MemberEditComponent, canDeactivate: [PreventUnsaveChangesGuard] },
