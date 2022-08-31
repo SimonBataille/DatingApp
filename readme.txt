@@ -483,3 +483,47 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
                 return true;
             }
         - app-routing.modules :  { path: 'member/edit', component: MemberEditComponent, canDeactivate: [PreventUnsaveChangesGuard] },
+
+- persisting the changes in the API:
+    - add Dto to get data from angular: MemberUpdateDto
+    - automapperprofile: from memberUpdateDto(angular) to AppUser (Db)
+    - userController: http.put
+            [HttpPut]
+            {
+                var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var user = await _userRepository.GetUserByUsernameAsync(username);
+
+                _mapper.Map(memberUpdateDto, user);
+
+                _userRepository.Update(user);
+
+                if (await _userRepository.saveAllAsync()) return NoContent();
+
+                return BadRequest("Failed to Update User");
+            }   
+
+- update user in client app:
+    - memberService.ts : 
+        updateMember(member: Member) {
+            return this.http.put(this.baseUrl + 'user', member);
+        }
+    - MemberEditComponent :
+        updateMember() {
+            this.memberService.updateMember(this.member).subscribe(() => {
+            this.toastr.success('Profile updated successfully');
+            this.editForm.reset(this.member);
+        })
+
+- loading indicator:
+    - cd client/, ng add ngx-spinner
+    - cd _services, ng g s busy --skip-tests : CREATE src/app/_services/busy.service.ts (133 bytes)
+    - new interceptor of req and res : cd _intereptors, ng g interceptor loading --skip-tests
+        CREATE src/app/_interceptors/loading.interceptor.ts (412 bytes
+    - appmodules : {provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true}
+    - <ngx-spinner></ngx-spinner> inside app-component.html
+
+- using service to store state:
+    - members.service.ts : if (this.members.length > 0) return of(this.members);
+    - MemberListComponent.ts : members$: Observable<Member[]>;
+    - MemberListComponent.html : <div *ngFor="let member of members$ |async" class="col-2">
+    

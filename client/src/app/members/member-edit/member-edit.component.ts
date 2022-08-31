@@ -23,7 +23,7 @@ export class MemberEditComponent implements OnInit {
   }
 
   constructor(private accountService: AccountService, private memberService: MembersService,
-    private toastr: ToastrService) { 
+    private toastr: ToastrService) {
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => this.user = user);
   }
 
@@ -38,8 +38,10 @@ export class MemberEditComponent implements OnInit {
   }
 
   updateMember() {
-    console.log(this.member);
-    this.toastr.success('Profile updated successfully');
-    this.editForm.reset(this.member);
+    this.memberService.updateMember(this.member).subscribe(() => {
+      this.toastr.success('Profile updated successfully');
+      this.editForm.reset(this.member);
+    })
+
   }
 }
