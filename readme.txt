@@ -526,4 +526,7 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
     - members.service.ts : if (this.members.length > 0) return of(this.members);
     - MemberListComponent.ts : members$: Observable<Member[]>;
     - MemberListComponent.html : <div *ngFor="let member of members$ |async" class="col-2">
+
+
+### SECTION 11
     
