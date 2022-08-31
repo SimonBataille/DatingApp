@@ -530,3 +530,17 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
 
 ### SECTION 11
     
+- where to store photos ? 
+    - in blob on db: NO
+    - in a file system
+    - cloud service : cloudinary
+
+- install cloudinary :
+    - nuget : 1.11.0
+    - appsettings.json
+    - Helpers to store cloudinary settings : strongly type conf settings, applicationServiceExtension
+
+- photo-service : to upload and delete photos
+    - Interface : IPhotoService
+    - service : public class PhotoService : IPhotoService
+    - add service inside application service extension
