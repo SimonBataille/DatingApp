@@ -544,3 +544,17 @@ SECTION 8 : extend API, add functionnality, Entity Framework Relationships, EF C
     - Interface : IPhotoService
     - service : public class PhotoService : IPhotoService
     - add service inside application service extension
+
+- usercontroller : user add new photo, http post => public async Task<PhotoDto> AddPhoto(IFormFile file)
+    - extension : ClaimsPrincipleExtensions
+    - user controller : public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
+    - 200 -> 201
+
+- created at route to generate a response
+    - UsersController: [HttpGet("{username}", Name = "GetUser")]
+    - return CreatedAtRoute("GetUser", new {username = user.UserName} , _mapper.Map<PhotoDto>(photo));
+
+- client upload photo
+    - cd src/app/members, ng g c photo-editor --skip-tests
+    - 
+
